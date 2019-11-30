@@ -6,6 +6,7 @@ import json
 def getDomains(phrase, proxies):
     currentProxy=0
     successful=False
+    phrase = phrase.replace(' ', '+')
     while not successful:
         try:
             r = requests.get('https://duckduckgo.com/html/?q='+phrase+'&t=h', headers={'User-Agent': 'Mozilla/5.0'}, proxies=proxies[currentProxy])
@@ -52,7 +53,7 @@ def getProxies():
 
 
 def load():
-    file = open("./train/train.json",'r')
+    file = open("D:/data/train/train.json",'r')
     data = json.loads(file.read())
     return data
 
@@ -60,10 +61,13 @@ def main():
     data = load()
     proxies = getProxies()
     domains={}
+    trainData={}
     backupCounter=0
     numOfBackup=1
     for d in data:
-        domainList = getDomains(d['claim'])
+        print(d['claim'])
+        domainList = getDomains(d['claim'], proxies)
+        trainData[d['claim']] = domainList
         for domain in domainList:
             if domain in domains:
                 domains[domain] +=1
@@ -74,6 +78,10 @@ def main():
             numOfBackup+=1
             file=open("./backup"+ str(numOfBackup)+".json", 'w')
             json.dump(domains, file)
+            file.close()
+            file=open("./training"+ str(numOfBackup)+".json", 'w')
+            json.dump(trainData, file)
+            file.close()
 
 
 if __name__ == '__main__':
