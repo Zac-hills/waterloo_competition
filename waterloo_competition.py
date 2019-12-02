@@ -2,21 +2,11 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import requests
 import json
+import time
 
-def getDomains(phrase, proxies):
-    currentProxy=0
-    successful=False
+def getDomains(phrase):
     phrase = phrase.replace(' ', '+')
-    while not successful:
-        try:
-            r = requests.get('https://duckduckgo.com/html/?q='+phrase+'&t=h', headers={'User-Agent': 'Mozilla/5.0'}, proxies=proxies[currentProxy])
-            successful=True
-        except:
-            proxies = proxies[1:]
-            successful=False
-            if len(proxies)==0:
-                print('Getting new proxies')
-                proxies = getProxies()
+    r = requests.get('https://duckduckgo.com/html/?q='+phrase+'&t=h', headers={'User-Agent': 'Mozilla/5.0'})
     soup = BeautifulSoup(r.text, 'html.parser')
     results = soup.find_all('a', attrs={'class':'result__a'}, href=True)
     domains=[]
@@ -59,14 +49,14 @@ def load():
 
 def main():
     data = load()
-    proxies = getProxies()
     domains={}
     trainData={}
     backupCounter=0
     numOfBackup=1
     for d in data:
+        time.sleep(8)
         print(d['claim'])
-        domainList = getDomains(d['claim'], proxies)
+        domainList = getDomains(d['claim'])
         trainData[d['claim']] = domainList
         for domain in domainList:
             if domain in domains:
